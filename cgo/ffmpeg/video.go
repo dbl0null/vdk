@@ -15,8 +15,8 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/deepch/vdk/av"
-	"github.com/deepch/vdk/codec/h264parser"
+	"github.com/dbl0null/vdk/av"
+	"github.com/dbl0null/vdk/codec/h264parser"
 )
 
 type VideoDecoder struct {
