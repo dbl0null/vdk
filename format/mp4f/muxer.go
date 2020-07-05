@@ -19,7 +19,7 @@ type Muxer struct {
 	bufw          *bufio.Writer
 	wpos          int64
 	fragmentIndex int
-	streams       []*Stream
+	streams       map[int]*Stream
 	path          string
 }
 
@@ -32,7 +32,7 @@ func (self *Muxer) SetPath(path string) {
 func (self *Muxer) SetMaxFrames(count int) {
 	self.maxFrames = count
 }
-func (self *Muxer) newStream(codec av.CodecData) (err error) {
+func (self *Muxer) newStream(idx int, codec av.CodecData) (err error) {
 	switch codec.Type() {
 	case av.H264, av.AAC:
 	default:
@@ -51,7 +51,7 @@ func (self *Muxer) newStream(codec av.CodecData) (err error) {
 
 	stream.trackAtom = &mp4io.Track{
 		Header: &mp4io.TrackHeader{
-			TrackId:  int32(len(self.streams) + 1),
+			TrackId:  int32(idx),
 			Flags:    0x0007,
 			Duration: 0,
 			Matrix:   [9]int32{0x10000, 0, 0, 0, 0x10000, 0, 0, 0, 0x40000000},
@@ -83,7 +83,8 @@ func (self *Muxer) newStream(codec av.CodecData) (err error) {
 	}
 
 	stream.muxer = self
-	self.streams = append(self.streams, stream)
+	//self.streams = append(self.streams, stream)
+	self.streams[idx] = stream
 
 	return
 }
@@ -207,10 +208,21 @@ func (self *Muxer) WriteTrailer() (err error) {
 }
 
 func (element *Muxer) WriteHeader(streams []av.CodecData) (err error) {
-	element.streams = []*Stream{}
-	for _, stream := range streams {
-		if err = element.newStream(stream); err != nil {
-			return
+	element.streams = map[int]*Stream{}
+
+	for idx, stream := range streams {
+		if err = element.newStream(idx, stream); err != nil {
+			//return
+			fmt.Println(err)
+		}
+	}
+
+	element.streams = map[int]*Stream{}
+
+	for idx, stream := range streams {
+		if err = element.newStream(idx, stream); err != nil {
+			fmt.Println("      WriteHeader      ===================================")
+			fmt.Println(err)
 		}
 	}
 	return
@@ -253,7 +265,12 @@ func (element *Muxer) GetInit(streams []av.CodecData) (string, []byte) {
 }
 
 func (element *Muxer) WritePacket(pkt av.Packet, GOP bool) (bool, []byte, error) {
-	stream := element.streams[pkt.Idx]
+	var stream *Stream = nil
+	if v, ok := element.streams[int(pkt.Idx)]; !ok {
+		return false, []byte{}, nil//unsupported stream, just skip it
+	} else {
+		stream = v
+	}
 	if GOP {
 		ts := time.Duration(0)
 		if stream.lastpkt != nil {
