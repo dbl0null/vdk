@@ -212,15 +212,6 @@ func (element *Muxer) WriteHeader(streams []av.CodecData) (err error) {
 
 	for idx, stream := range streams {
 		if err = element.newStream(idx, stream); err != nil {
-			//return
-			fmt.Println(err)
-		}
-	}
-
-	element.streams = map[int]*Stream{}
-
-	for idx, stream := range streams {
-		if err = element.newStream(idx, stream); err != nil {
 			fmt.Println("      WriteHeader      ===================================")
 			fmt.Println(err)
 		}

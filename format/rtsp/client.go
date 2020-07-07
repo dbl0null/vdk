@@ -694,10 +694,21 @@ func (self *Client) Describe() (streams []sdp.Media, err error) {
 
 	self.streams = []*Stream{}
 	for _, media := range medias {
-		stream := &Stream{Sdp: media, client: self}
-		stream.makeCodecData()
-		self.streams = append(self.streams, stream)
-		streams = append(streams, media)
+		fmt.Println("		processing  ======= ", media.AVType, media.Control)
+
+		// TODO: add switch here
+		if media.AVType == "video" {
+			stream := &Stream{Sdp: media, client: self}
+			stream.makeCodecData()
+			self.streams = append(self.streams, stream)
+			streams = append(streams, media)
+			fmt.Println("		processing  ======= ", media.AVType, media.PayloadType, media.Control)
+		}
+
+		//stream := &Stream{Sdp: media, client: self}
+		//stream.makeCodecData()
+		//self.streams = append(self.streams, stream)
+		//streams = append(streams, media)
 	}
 	self.stage = stageDescribeDone
 	return
