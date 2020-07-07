@@ -158,11 +158,17 @@ func (self *Muxer) WriteHeader(streams []av.CodecData) (err error) {
 func (self *Muxer) WritePacket(pkt av.Packet) (err error) {
 	var stream *Stream = nil
 
-	stream, ok := self.streams[int(pkt.Idx)]
-	if !ok {
-		fmt.Printf("Warning, unsupported stream index: %d\n", pkt.Idx)
-		return
+	if v, ok := self.streams[int(pkt.Idx)]; !ok {
+		return //unsupported stream, just skip it
+	} else {
+		stream = v
 	}
+
+	//stream, ok := self.streams[int(pkt.Idx)]
+	//if !ok {
+	//	fmt.Printf("Warning, unsupported stream index: %d\n", pkt.Idx)
+	//	return
+	//}
 
 	pkt.Time += time.Second
 
