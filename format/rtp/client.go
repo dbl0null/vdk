@@ -1,4 +1,4 @@
-package rtsp
+package rtp
 
 import (
 	"bufio"
@@ -456,7 +456,7 @@ func (self *Client) findRTSP() (block []byte, data []byte, err error) {
 			}
 		}
 
-		if false && self.DebugRtsp {
+		if false && self.DebugRtp {
 			fmt.Println("rtsp: findRTSP", i, b)
 		}
 
@@ -469,7 +469,7 @@ func (self *Client) findRTSP() (block []byte, data []byte, err error) {
 		}
 
 		if stat == Dollar && len(peek) >= 12 {
-			if self.DebugRtsp {
+			if self.DebugRtp {
 				fmt.Println("rtsp: dollar at", i, len(peek))
 			}
 			if blocklen, _, ok := self.parseBlockHeader(peek); ok {
